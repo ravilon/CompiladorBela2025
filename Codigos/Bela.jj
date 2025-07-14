@@ -62,13 +62,15 @@ Prog Bela() :
     {return new Prog(main,funs);}
 }
 
-void Main() :
-{}
+Main Main() :
+{ArrayList<VarDecl> vars = null;ArrayList<Comando> coms = null;}
 {
     <MAIN> <APAR> <FPAR> <ACHAVES> 
-    VarDecl() 
-    SeqComandos() 
+    vars=VarDecl() 
+    coms=SeqComandos() 
     <FCHAVES>
+
+    {return new Main(vars, coms);}
 }
 
 void VarDecl() :
