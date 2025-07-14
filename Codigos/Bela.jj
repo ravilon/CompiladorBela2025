@@ -1,0 +1,190 @@
+PARSER_BEGIN(Bela)
+import java.io.*;
+public class Bela {
+
+  public static void main(String args[]) throws ParseException,IOException {
+    
+ 	Bela analisador = new Bela(new FileInputStream(args[0]));
+ 	analisador.Bela();
+  }
+
+}
+
+PARSER_END(Bela)
+
+SKIP :
+{
+  " "
+| "\t"
+| "\n"
+| "\r"
+}
+
+TOKEN :
+{
+  <MAIN: "main">
+|<VAR: "var">
+|<APAR: "(">
+|<FPAR: ")">  
+| <ACHAVES: "{">
+| <FCHAVES: "}">
+| <PVIRG: ";">
+| <FLOAT: "float">
+| <BOOL: "bool">
+| <VOID: "void">
+| <ATRIB: "=">
+| <IF: "if">
+| <THEN: "then">
+| <WHILE: "while">
+| <READINPUT: "readInput">
+| <RETURN: "return">
+| <PRINT: "printLn">
+| <TRUE: "true">
+| <FALSE: "false">
+| <OP: "+" | "-" | "*" | "/" | "%&" | "||" | "<" | ">" | "==" | " % ">
+| <COMMA: ",">
+| <FUN: "fun">
+| <NUM : (["0"-"9"])+ (["."] (["0"-"9"])+)?>
+| <ID: ["a"-"z","A"-"Z"] ( ["a"-"z","A"-"Z","0"-"9"])?>
+
+
+}
+
+
+
+
+
+Prog Bela() :
+{Main main = null; ArrayList<Fun> funs = null;}
+{
+    main=Main() fun=FunLinha() <EOF>
+
+    {return new Prog(main,funs);}
+}
+
+void Main() :
+{}
+{
+    <MAIN> <APAR> <FPAR> <ACHAVES> 
+    VarDecl() 
+    SeqComandos() 
+    <FCHAVES>
+}
+
+void VarDecl() :
+{}
+{
+    ( <VAR> Tipo() <ID> <PVIRG> VarDeclLinha() )?
+}
+
+void VarDeclLinha() :
+{}
+{
+    ( <VAR> Tipo() <ID> <PVIRG> VarDeclLinha() )?
+}
+
+void Tipo() :
+{}
+{
+    <FLOAT> | <BOOL> | <VOID>
+}
+
+void SeqComandos() :
+{}
+{
+    ( Comando() SeqComandosLinha() )?
+}
+
+void SeqComandosLinha() :
+{}
+{
+    ( Comando() SeqComandosLinha() )?
+}
+
+void Comando() :
+{}
+{     
+      LOOKAHEAD( <ID> <ATRIB> )
+      <ID> <ATRIB> Exp() <PVIRG>
+
+    | LOOKAHEAD( <ID> <APAR> )
+      <ID> <APAR> ( ListaExp() )? <FPAR> <PVIRG>
+
+    | LOOKAHEAD( <ID> <ATRIB>)
+      <ID> <ATRIB> <READINPUT> <APAR> <FPAR> <PVIRG>
+
+    | <IF> Exp() <THEN> <ACHAVES> SeqComandos() <FCHAVES> <PVIRG>
+    | <WHILE> Exp() <ACHAVES> SeqComandos() <FCHAVES> <PVIRG> 
+
+    | <RETURN> Exp() <PVIRG>
+    | <PRINT> Exp() <PVIRG>
+}
+
+void Exp() :
+{}
+{
+    <APAR> Exp() Op() Exp() <FPAR>
+    | Fator()
+}
+
+void Fator() :
+{}
+{     
+      LOOKAHEAD( <ID> ) 
+      <ID>
+    | LOOKAHEAD( <ID> <APAR> )
+      <ID> <APAR> ( ListaExp() )? <FPAR>
+    | <NUM>
+    | <TRUE>
+    | <FALSE>
+}
+
+void Op() :
+{}
+{
+    <OP>
+}
+
+void ListaExp() :
+{}
+{
+    Exp() ListaExpLinha()
+}
+
+void ListaExpLinha() :
+{}
+{
+    ( <COMMA> Exp() ListaExpLinha() )?
+}
+
+void Fun() :
+{}
+{
+    <FUN> Tipo() <ID> <APAR> ( ListaArg() )? <FPAR> <ACHAVES> 
+    VarDecl() 
+    SeqComandos() 
+    <FCHAVES>
+}
+
+void FunLinha() :
+{}
+{
+    ( Fun() FunLinha() )?
+}
+
+void ListaArg() :
+{}
+{
+    Tipo() <ID> ListaArgLinha()
+}
+
+void ListaArgLinha() :
+{}
+{
+    ( <COMMA> Tipo() <ID> ListaArgLinha() )?
+}
+
+
+
+
+
